@@ -88,6 +88,8 @@ export class TesteComponent implements OnInit {
         this.myDiagram.model = new go.TreeModel(this.state.diagramNodeData);
         this.myDiagram.contextMenu = myContextMenu;
 
+        // initEventDiagram();
+
         return this.myDiagram;
     }
 
@@ -112,7 +114,7 @@ export class TesteComponent implements OnInit {
         cxElement?.addEventListener("contextmenu", function(e) {
             e.preventDefault();
             return false;
-          }, false);
+        }, false);
     }
 
     nodeDoubleClick(e: go.InputEvent, obj: any) {
@@ -174,9 +176,9 @@ export class TesteComponent implements OnInit {
           // we don't bother overriding positionContextMenu, we just do it here:
           var mousePt = diagram.lastInput.viewPoint;
 
-          if(!cxElement) {
-             // cxElement.style.left = mousePt.x + 5 + "px";
-             // cxElement.style.top = mousePt.y + "px";
+          if(cxElement) {
+              cxElement.style.left = mousePt.x + 5 + "px";
+              cxElement.style.top = mousePt.y + "px";
           } 
         }
   
