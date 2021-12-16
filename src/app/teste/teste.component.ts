@@ -26,6 +26,8 @@ export class TesteComponent implements OnInit {
     public diagramDivClassName: string = 'myDiagramDiv';
     public paletteDivClassName = 'myPaletteDiv';
 
+    myDiagram :go.Diagram | undefined;
+   
     constructor() { }
 
     ngOnInit(): void {
@@ -34,8 +36,6 @@ export class TesteComponent implements OnInit {
     helloWorld() {    
         console.log(this.myDiagram?.model.toJson());
     }
-
-    public myDiagram :go.Diagram | undefined;
 
     public ngAfterViewInit() {
         this.initDiagram();
@@ -88,13 +88,19 @@ export class TesteComponent implements OnInit {
         this.myDiagram.model = new go.TreeModel(this.state.diagramNodeData);
         this.myDiagram.contextMenu = myContextMenu;
 
-        // initEventDiagram();
+        this.initEventDiagram();
 
         return this.myDiagram;
     }
 
     initEventDiagram() : void {
         //Versão de teste. Existem algumas boas praticas a serem consideradas. Olha projeto padrão do gojs para angular 11.
+        this.initChangeSelection();
+        this.initContextMenu();
+        this.initCommandHandler();
+    }
+
+    initChangeSelection() {
         const testComponente = this;
 
         this.myDiagram?.addDiagramListener('ChangedSelection', function (event) {
@@ -108,13 +114,50 @@ export class TesteComponent implements OnInit {
                 testComponente.state.selectedNodeData = node;
             }
         });
+    }
 
+    initContextMenu() {
         let cxElement = document.getElementById("contextMenu");
 
         cxElement?.addEventListener("contextmenu", function(e) {
             e.preventDefault();
             return false;
         }, false);
+    }
+
+    initCommandHandler() {
+        let cmdhnd = this.myDiagram?.commandHandler;
+        
+        cmdhnd?.canCopySelection();
+        cmdhnd?.canPasteSelection();
+        cmdhnd?.canCutSelection();
+        cmdhnd?.canDeleteSelection();
+        cmdhnd?.canUndo();
+        cmdhnd?.canRedo();
+    }
+
+    copySelection(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.copySelection();
+    }
+
+    pasteSelection(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.pasteSelection();
+    }
+
+    deleteSelection(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.deleteSelection();
+    }
+
+    cutSelection(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.cutSelection();
+    }
+
+    redu(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.pasteSelection();
+    }
+
+    undo(myDiagram: go.Diagram) {
+        myDiagram?.commandHandler.pasteSelection();
     }
 
     nodeDoubleClick(e: go.InputEvent, obj: any) {

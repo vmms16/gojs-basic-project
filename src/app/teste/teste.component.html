@@ -1,4 +1,10 @@
 <p (click)="helloWorld()">teste works!</p>
+<div>
+  <input *ngIf="myDiagram" type="button" (click)="copySelection(myDiagram)" value="Copy">
+  <input *ngIf="myDiagram" type="button" (click)="pasteSelection(myDiagram)" value="Paste">
+  <input *ngIf="myDiagram" type="button" (click)="cutSelection(myDiagram)" value="Cut">
+  <input *ngIf="myDiagram" type="button" (click)="deleteSelection(myDiagram)" value="Delete">
+</div>
 <!-- <gojs-diagram *ngIf="myDiagram"
   [initDiagram]='initDiagram'
   [nodeDataArray]='state.diagramNodeData'
