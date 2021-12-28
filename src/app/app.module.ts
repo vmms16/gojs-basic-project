@@ -5,15 +5,18 @@ import { GojsAngularModule } from 'gojs-angular';
 
 import { AppComponent } from './app.component';
 import { TesteComponent } from './teste/teste.component';
+import { JointjsTesteComponent } from './jointjs-teste/jointjs-teste.component';
 
 const appRoutes: Routes = [
   { path: '', component: AppComponent },
   { path: 'teste', component: TesteComponent },
+  { path: 'teste2', component: JointjsTesteComponent },
 ];
 @NgModule({
   declarations: [
     AppComponent,
-    TesteComponent
+    TesteComponent,
+    JointjsTesteComponent
   ],
   imports: [
     BrowserModule,

@@ -50,6 +50,8 @@ export class TesteComponent implements OnInit {
             maxSelectionCount: 1,
             validCycle: go.Diagram.CycleDestinationTree,
             layout: $(go.TreeLayout),
+            "commandHandler.copiesTree": true,
+            "commandHandler.copiesParentKey": true,
             model: $(go.GraphLinksModel,
                 {
                     nodeKeyProperty: 'id',
@@ -126,14 +128,16 @@ export class TesteComponent implements OnInit {
     }
 
     initCommandHandler() {
-        let cmdhnd = this.myDiagram?.commandHandler;
+        const testComponente = this;
         
-        cmdhnd?.canCopySelection();
-        cmdhnd?.canPasteSelection();
-        cmdhnd?.canCutSelection();
-        cmdhnd?.canDeleteSelection();
-        cmdhnd?.canUndo();
-        cmdhnd?.canRedo();
+        this.myDiagram?.addDiagramListener('SelectionDeleting', function(e) {
+            testComponente.deleteSelection(e.diagram);
+        });
+
+        this.myDiagram?.addDiagramListener('ClipboardPasted', function(e){
+            console.log(e);
+        });
+
     }
 
     copySelection(myDiagram: go.Diagram) {
@@ -144,8 +148,25 @@ export class TesteComponent implements OnInit {
         myDiagram?.commandHandler.pasteSelection();
     }
 
-    deleteSelection(myDiagram: go.Diagram) {
-        myDiagram?.commandHandler.deleteSelection();
+    deleteSelection(diagram: go.Diagram) {
+        let node = this.state.selectedNodeData;
+
+        if(node) {
+            diagram?.startTransaction("reparent remove");
+            let chl = node.findTreeChildrenNodes();
+            let parent = node.findTreeParentNode();
+            // iterate through the children and set their parent key to our selected node's parent key
+            
+                while (chl.next()) {
+                  var emp = chl.value;
+
+                  (diagram?.model as go.TreeModel).setParentKeyForNodeData(emp.data, parent? parent.data.key : '');
+                }
+
+                // and now remove the selected node itself
+                diagram?.model.removeNodeData(node.data);
+                diagram?.commitTransaction("reparent remove");
+        }
     }
 
     cutSelection(myDiagram: go.Diagram) {
@@ -196,6 +217,7 @@ export class TesteComponent implements OnInit {
         // Show only the relevant buttons given the current state.
         var cmd = diagram.commandHandler;
         var hasMenuItem = false;
+        
         function maybeShowItem(elt : any, pred : any) {
           if (pred) {
             elt.style.display = "block";
@@ -204,12 +226,12 @@ export class TesteComponent implements OnInit {
             elt.style.display = "none";
           }
         }
+
         maybeShowItem(document.getElementById("cut"), cmd.canCutSelection());
         maybeShowItem(document.getElementById("copy"), cmd.canCopySelection());
         maybeShowItem(document.getElementById("paste"), cmd.canPasteSelection(diagram.toolManager.contextMenuTool.mouseDownPoint));
         maybeShowItem(document.getElementById("delete"), cmd.canDeleteSelection());
-        maybeShowItem(document.getElementById("color"), obj !== null);
-  
+       
         // Now show the whole context menu element
 
         let cxElement = document.getElementById("contextMenu");
@@ -237,5 +259,24 @@ export class TesteComponent implements OnInit {
         // Optional: Use a `window` click listener with event capture to
         //           remove the context menu if the user clicks elsewhere on the page
         window.removeEventListener("click", this.hideCX, true);
+    }
+
+    cxcommand(event: any) {
+        let val = event.currentTarget.id;
+        let diagram = this.myDiagram;
+
+        switch (val) {
+          case "cut": diagram?.commandHandler.cutSelection(); break;
+          case "copy": diagram?.commandHandler.copySelection(); break;
+          case "paste": diagram?.commandHandler.pasteSelection(); break;
+          case "delete": 
+            if(diagram) {
+                this.deleteSelection(diagram); break;   
+            }
+
+            break;
+        }
+
+        diagram?.currentTool.stopTool();
     }
 }
