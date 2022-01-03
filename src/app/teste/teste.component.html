@@ -1,4 +1,4 @@
-<p (click)="helloWorld()">teste works!</p>
+<button (click)="connect()">{{textContent}}</button>
 <div>
   <input *ngIf="myDiagram" type="button" (click)="copySelection(myDiagram)" value="Copy">
   <input *ngIf="myDiagram" type="button" (click)="pasteSelection(myDiagram)" value="Paste">
@@ -25,3 +25,6 @@
   <li id="paste" class="menu-item" (click)="cxcommand($event)">Paste</li>
   <li id="delete" class="menu-item" (click)="cxcommand($event)">Delete</li>
 </ul>
+<button (click)="remove()">remover da pilha</button>
+<button (click)="insert()">Atualizar diagrama</button>
+<span *ngFor="let item of yarray">{{item}}</span>

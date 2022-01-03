@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import * as go from 'gojs';
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import { IndexeddbPersistence } from 'y-indexeddb';
 
 @Component({
 selector: 'app-teste',
@@ -8,6 +11,17 @@ styleUrls: ['./teste.component.css']
 })
 export class TesteComponent implements OnInit {
 
+    array: number[] = [];
+
+    value: go.Diagram | undefined;
+
+    ydoc = new Y.Doc();
+   
+    yarray:any;
+
+    websocketProvider:any;
+
+    textContent = "Disconnect"
 
     public state = {
         // Diagram state props
@@ -28,7 +42,19 @@ export class TesteComponent implements OnInit {
 
     myDiagram :go.Diagram | undefined;
    
-    constructor() { }
+    constructor() { 
+        const indexeddbProvider = new IndexeddbPersistence('TodoDoc', this.ydoc)
+
+        // Getting contents of array from doc created.
+        this.yarray = this.ydoc.getArray("TodoDoc");
+
+        // Creating a websocket connection between users for a particular doc.
+        this.websocketProvider = new WebsocketProvider(
+        "wss://demos.yjs.dev",
+        "TodoDoc",
+        this.ydoc
+        );
+    }
 
     ngOnInit(): void {
     }
@@ -39,6 +65,7 @@ export class TesteComponent implements OnInit {
 
     public ngAfterViewInit() {
         this.initDiagram();
+        this.demo();
     }
 
     initDiagram(): go.Diagram {
@@ -278,5 +305,50 @@ export class TesteComponent implements OnInit {
         }
 
         diagram?.currentTool.stopTool();
+    }
+
+
+
+    // RealTime websocket
+
+    connect() {
+        if (this.websocketProvider.shouldConnect) {
+          this.websocketProvider.disconnect();
+          this.textContent = "Connect";
+        } else {
+          this.websocketProvider.connect();
+          this.textContent = "Disconnect";
+        }
+    }
+
+    demo() {
+        this.yarray.observe(() => {
+          for (let i = 0; i < this.yarray.length; i++) {
+            // console.log(this.yarray.get(i));
+          }
+        });
+    
+        this.ydoc.on("update", (update: Uint8Array) => {
+          Y.applyUpdate(this.ydoc, update);
+          
+          let x = JSON.stringify(this.ydoc.getArray('TodoDoc').get(0));
+          if(x) {
+              let model = JSON.parse(x);
+              if(this.myDiagram) {
+                this.myDiagram.model = new go.TreeModel(model.nodes);
+              }
+          }
+        });
+    }
+
+    insert() {
+        if(this.myDiagram) {
+            this.ydoc.getArray("TodoDoc").insert(0, [{nodes:this.myDiagram.model.nodeDataArray}]);
+            this.ydoc.getArray("TodoDoc").get(0);
+        }
+      }
+
+    remove() {
+        this.ydoc.getArray("TodoDoc").delete(0);
     }
 }
